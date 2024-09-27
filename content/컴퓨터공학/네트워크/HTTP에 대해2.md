@@ -1,5 +1,12 @@
 ---
 title: HTTP2와 HTTP3
+description: HTTP/2와 HTTP/3에 대해 알아보자
+date: 2024-09-27
+tags:
+  - 컴퓨터공학
+  - 네트워크
+  - HTTP
+  - 프로토콜
 ---
 
 # HTTP/2
