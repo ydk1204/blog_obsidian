@@ -8,6 +8,11 @@ import { visit } from "unist-util-visit"
 import { Root, Element, ElementContent } from "hast"
 import { GlobalConfiguration } from "../cfg"
 import { i18n } from "../i18n"
+// Disqus 임포트
+import Disqus, { disqusScript } from "./Disqus" // custom component
+// NavBar 임포트
+import NavBar, { navbarScript } from "./NavBar" // custom component
+
 
 interface RenderComponents {
   head: QuartzComponent
@@ -218,6 +223,7 @@ export function renderPage(
       <Head {...componentData} />
       <body data-slug={slug}>
         <div id="quartz-root" class="page">
+          <NavBar />
           <Body {...componentData}>
             {LeftComponent}
             <div class="center">
@@ -234,23 +240,23 @@ export function renderPage(
                 </div>
               </div>
               <Content {...componentData} />
-              <hr />
-              <div class="page-footer">
-                {afterBody.map((BodyComponent) => (
-                  <BodyComponent {...componentData} />
-                ))}
-              </div>
+              {componentData.fileData.frontmatter?.disqus && <Disqus slug={slug} />}
             </div>
             {RightComponent}
-            <Footer {...componentData} />
           </Body>
+          <Footer {...componentData} />
         </div>
       </body>
       {pageResources.js
         .filter((resource) => resource.loadTime === "afterDOMReady")
         .map((res) => JSResourceToScriptElement(res))}
+        <script dangerouslySetInnerHTML={{ __html: navbarScript }} />
+      {componentData.fileData.frontmatter?.disqus && (
+        <script data-cfasync="false" type="text/javascript" dangerouslySetInnerHTML={{ __html: disqusScript }} />
+      )}
     </html>
   )
+
 
   return "<!DOCTYPE html>\n" + render(doc)
 }

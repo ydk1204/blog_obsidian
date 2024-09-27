@@ -1,3 +1,195 @@
 @use "./base.scss";
 
 // put your custom CSS here!
+/* Navbar Custom Styles */
+// 기본 라이트모드 색상
+:root {
+  --nav-background: var(--light); // 밝은 배경색
+  --nav-text-color: var(--darkgray); // 어두운 텍스트 색상
+  --dropdown-bg: var(--lightgray); // 드롭다운 배경색
+  --dropdown-text: black; // 드롭다운 배경색
+  --dropdown-hover-bg: darken(var(--lightgray), 5%); // 드롭다운 호버 배경색
+  --nav-mobile-bg: rgba(223, 223, 223, 0.926);
+}
+ 
+// 다크모드 색상
+:root[saved-theme="dark"] {
+  // --dropdown-bg: var(--darkgray); // 드롭다운 어두운 배경색
+  --dropdown-bg: rgba(68, 68, 68, 0.377); // 드롭다운 어두운 배경색
+  --dropdown-text: white;
+  --dropdown-hover-bg: lighten(var(--darkgray), 5%); // 드롭다운 호버 밝게
+  --nav-mobile-bg: rgba(25, 25, 25, 0.955);
+}
+ 
+.navBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 45px;
+  background-color: var(--nav-background);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+
+}
+ 
+.container {
+  width: 100%;
+  max-width: 855px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+ 
+.title {
+  font-size: larger;
+  font-weight: bold;
+  flex: 1;
+}
+ 
+.links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+ 
+.link, .dropbtn {
+  color: var(--nav-text-color);
+  text-decoration: none;
+  padding: 4px 8px;
+  margin: 0 4px;
+  display: inline-block;
+  font-size: 16px;
+}
+ 
+.button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #333;
+}
+ 
+/* Dropdown styles */
+.dropdown {
+  position: relative;
+}
+ 
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: var(--dropdown-bg);
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  min-width: 160px;
+  z-index: 1;
+  width: auto; /* Adjust width as necessary */
+  border-radius: 10px;
+}
+ 
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+ 
+.dropdown-content a {
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+  color: var(--dropdown-text);
+}
+ 
+.dropdown-content a:hover {
+  background-color: var(--dropdown-hover-bg);
+}
+ 
+/* Desktop styles */
+@media (min-width: 601px) {
+  .button, .close-menu {
+    display: none; /* 데스크탑에서는 햄버거와 X 버튼 숨기기 */
+  }
+ 
+  .dropdown-content {
+    position: absolute;
+    left: 50%; /* 중앙 정렬 */
+    transform: translateX(-50%); /* 정확한 중앙 */
+  }
+}
+ 
+/* Mobile styles */
+@media (max-width: 600px) {
+  #navbar-links {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0; /* 전체 너비 사용 */
+    width: 100%; /* 너비 100%로 조정 */
+    height: 100vh;
+    background-color: var(--nav-mobile-bg);
+    z-index: 1002;
+    flex-direction: column;
+    justify-content: center; /* 가운데 정렬 */
+    align-items: center; /* 항목들을 가운데 정렬 */
+    padding-top: 20px; /* 상단 패딩 조정 */
+    overflow-y: auto;
+    font-size: larger;
+  }
+ 
+  #navbar-links.active {
+    display: flex;
+  }
+ 
+  .close-menu {
+    position: absolute;
+    top: 20px;
+    right: 20px; /* 우측 상단에 위치 */
+    font-size: 24px;
+    color: var(--dropdown-text);
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+ 
+  .links, .dropdown-content {
+    flex-direction: column;
+    align-items: center; /* 중앙 정렬 */
+    width: 100%;
+  }
+
+  .dropdown-content a {
+    text-align: center;
+  }
+ 
+  .link, .dropbtn {
+    display: block;
+    text-align: center; /* 텍스트 중앙 정렬 */
+    padding: 12px 20px;
+    font-size: 16px;
+    color: var(--dropdown-text);
+    text-decoration: none;
+  }
+
+  .dropbtn {
+    border-bottom: 2px solid var(--dropdown-text); /* 구분선 추가 */
+    margin: 0;
+  }
+
+  .dropdown:last-child {
+    border: 1px solid var(--dropdown-text) ;
+    border-radius: 10px;
+  }
+ 
+  .dropdown-content {
+    display: block; /* 하위 메뉴 항상 표시 */
+    position: static; /* 위치 조정 */
+    width: 100%;
+    background-color: transparent;
+    // border: 1px solid var(--dropdown-text) ;
+  }
+}
+ 

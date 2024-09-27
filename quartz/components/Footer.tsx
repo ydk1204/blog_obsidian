@@ -24,6 +24,9 @@ export default ((opts?: Options) => {
             </li>
           ))}
         </ul>
+        <p>
+          Copyright © 2024 - 2024 ydk1204
+        </p>
       </footer>
     )
   }
