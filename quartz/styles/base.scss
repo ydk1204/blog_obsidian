@@ -581,7 +581,7 @@ ol.overflow {
     bottom: 0;
     opacity: 1;
     transition: opacity 0.3s ease;
-    background: linear-gradient(transparent 0px, var(--light));
+    // background: linear-gradient(transparent 0px, var(--light)); // 이거 키면 몇몇 리스트가 흐리게 보임
   }
 }
 

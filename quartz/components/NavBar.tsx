@@ -35,10 +35,17 @@ const closeButton = document.querySelector('.close-menu');
 
 menuButton.addEventListener('click', function() {
   linksContainer.classList.add('active'); // 메뉴 활성화
+  document.body.classList.add('scroll-disable'); // 모달 배경 스크롤 방지
+});
+
+linksContainer.addEventListener('click', function() {
+    linksContainer.classList.remove('active'); // 메뉴 비활성화
+    document.body.classList.remove('scroll-disable');  // 모달 배경 스크롤 방지
 });
 
 closeButton.addEventListener('click', function() {
   linksContainer.classList.remove('active'); // 메뉴 비활성화
+  document.body.classList.remove('scroll-disable');  // 모달 배경 스크롤 방지
 });
 });
 `
