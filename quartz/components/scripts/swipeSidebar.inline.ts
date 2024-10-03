@@ -26,14 +26,16 @@ function handleTouchMove(e: TouchEvent) {
   if (Math.abs(diffX) > threshold) {
     if (diffX > 0) {
       // 왼쪽으로 스와이프
-      leftSidebar.classList.remove('open')
-      if (!rightSidebar.classList.contains('open')) {
+      if (leftSidebar.classList.contains('open')) {
+        leftSidebar.classList.remove('open')
+      } else if (!rightSidebar.classList.contains('open')) {
         rightSidebar.classList.add('open')
       }
     } else {
       // 오른쪽으로 스와이프
-      rightSidebar.classList.remove('open')
-      if (!leftSidebar.classList.contains('open')) {
+      if (rightSidebar.classList.contains('open')) {
+        rightSidebar.classList.remove('open')
+      } else if (!leftSidebar.classList.contains('open')) {
         leftSidebar.classList.add('open')
       }
     }
