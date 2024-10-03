@@ -1,0 +1,59 @@
+.swipe-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.sidebar-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  pointer-events: none;
+}
+
+.left-sidebar,
+.right-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 80%;
+  max-width: 300px;
+  background-color: var(--light);
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+  pointer-events: auto;
+  height: 100%;
+  padding: 1rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-sidebar {
+  left: 0;
+  transform: translateX(-100%);
+}
+
+.right-sidebar {
+  right: 0;
+  transform: translateX(100%);
+}
+
+.left-sidebar.open {
+  transform: translateX(0);
+}
+
+.right-sidebar.open {
+  transform: translateX(0);
+}
+
+@media (min-width: 801px) {
+  .swipe-sidebar {
+    display: none;
+  }
+}

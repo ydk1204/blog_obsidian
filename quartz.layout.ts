@@ -4,14 +4,16 @@ import * as Component from "./quartz/components"
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
-  header: [],
-  afterBody: [],
+  header: [
+    Component.MobileOnly(Component.SwipeSidebar()),
+  ],
   footer: Component.Footer({
     links: {
       GitHub: "https://github.com/jackyzha0/quartz",
       "Discord Community": "https://discord.gg/cRFFHYye7t",
     },
   }),
+  afterBody: [], // 이 줄을 추가했습니다
 }
 
 // components for pages that display a single page (e.g. a single note)
