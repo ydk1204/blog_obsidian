@@ -58,5 +58,59 @@ document.addEventListener('click', (e) => {
 }, false)
 
 export default `
-  // 위의 TypeScript 코드를 그대로 JavaScript로 변환하여 여기에 넣으세요.
+  let startX = null;
+  let startY = null;
+  const threshold = 50;
+
+  function handleTouchStart(e) {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }
+
+  function handleTouchMove(e) {
+    if (!startX || !startY) return;
+
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+    const diffX = startX - x;
+    const diffY = startY - y;
+
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+
+    const leftSidebar = document.querySelector('.left-sidebar');
+    const rightSidebar = document.querySelector('.right-sidebar');
+
+    if (!leftSidebar || !rightSidebar) return;
+
+    if (Math.abs(diffX) > threshold) {
+      if (diffX > 0) {
+        if (leftSidebar.classList.contains('open')) {
+          leftSidebar.classList.remove('open');
+        } else if (!rightSidebar.classList.contains('open')) {
+          rightSidebar.classList.add('open');
+        }
+      } else {
+        if (rightSidebar.classList.contains('open')) {
+          rightSidebar.classList.remove('open');
+        } else if (!leftSidebar.classList.contains('open')) {
+          leftSidebar.classList.add('open');
+        }
+      }
+      startX = null;
+      startY = null;
+    }
+  }
+
+  function closeSidebars() {
+    document.querySelector('.left-sidebar')?.classList.remove('open');
+    document.querySelector('.right-sidebar')?.classList.remove('open');
+  }
+
+  document.addEventListener('touchstart', handleTouchStart, false);
+  document.addEventListener('touchmove', handleTouchMove, false);
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.swipe-sidebar')) {
+      closeSidebars();
+    }
+  }, false);
 `
