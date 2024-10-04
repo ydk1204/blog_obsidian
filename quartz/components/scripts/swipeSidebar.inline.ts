@@ -3,6 +3,8 @@ function isMobile() {
 }
 
 let scrollPosition = 0;
+// 사이드바가 닫힘과 동시에 반대편 사이드바가 열리는 것을 방지하는 변수
+let isClosing = false;
 
 function createOverlay() {
   const overlay = document.createElement('div');
@@ -61,7 +63,7 @@ function initSwipeSidebar() {
 
       const swipeDirection = diffX > 0 ? 'left' : 'right';
 
-      if (openSidebar === null) {
+      if (openSidebar === null && !isClosing) {
         if (swipeDirection === 'left') {
           openSidebar = 'right';
           openSidebarElement(rightSidebar);
@@ -79,21 +81,6 @@ function initSwipeSidebar() {
           } else {
             closeSidebarElement(rightSidebar);
           }
-          openSidebar = null;
-        } else {
-          if (openSidebar === 'left') {
-            closeSidebarElement(leftSidebar);
-            setTimeout(() => {
-              openSidebar = 'right';
-              openSidebarElement(rightSidebar);
-            }, 300);
-          } else if (openSidebar === 'right') {
-            closeSidebarElement(rightSidebar);
-            setTimeout(() => {
-              openSidebar = 'left';
-              openSidebarElement(leftSidebar);
-            }, 300);
-          }
         }
       }
 
@@ -105,9 +92,6 @@ function initSwipeSidebar() {
   function handleTouchEnd() {
     startX = null;
     startY = null;
-    setTimeout(() => {
-      isAnimating = false;
-    }, 300);
   }
 
   function openSidebarElement(sidebar: HTMLElement) {
@@ -124,6 +108,7 @@ function initSwipeSidebar() {
   }
 
   function closeSidebarElement(sidebar: HTMLElement) {
+    isClosing = true;
     sidebar.style.transition = 'transform 0.3s ease';
     sidebar.classList.remove('open');
     sidebar.style.transform = sidebar.classList.contains('left-sidebar')
@@ -134,8 +119,10 @@ function initSwipeSidebar() {
       removeOverlay(overlay);
       overlay = null;
     }
+    openSidebar = null;
     setTimeout(() => {
       isAnimating = false;
+      isClosing = false;
       sidebar.style.transition = '';
     }, 300);
   }
@@ -147,7 +134,6 @@ function initSwipeSidebar() {
         closeSidebarElement(sidebar);
       }
     }
-    openSidebar = null;
   }
 
   function handleTocClick(e: Event) {
