@@ -79,21 +79,6 @@ function initSwipeSidebar() {
           } else {
             closeSidebarElement(rightSidebar);
           }
-          openSidebar = null;
-        } else {
-          if (openSidebar === 'left') {
-            closeSidebarElement(leftSidebar);
-            setTimeout(() => {
-              openSidebar = 'right';
-              openSidebarElement(rightSidebar);
-            }, 300);
-          } else if (openSidebar === 'right') {
-            closeSidebarElement(rightSidebar);
-            setTimeout(() => {
-              openSidebar = 'left';
-              openSidebarElement(leftSidebar);
-            }, 300);
-          }
         }
       }
 
@@ -111,6 +96,8 @@ function initSwipeSidebar() {
   }
 
   function openSidebarElement(sidebar: HTMLElement) {
+    if (isAnimating) return;
+    isAnimating = true;
     sidebar.style.transition = 'transform 0.3s ease';
     sidebar.classList.add('open');
     sidebar.style.transform = 'translateX(0)';
@@ -124,6 +111,8 @@ function initSwipeSidebar() {
   }
 
   function closeSidebarElement(sidebar: HTMLElement) {
+    if (isAnimating) return;
+    isAnimating = true;
     sidebar.style.transition = 'transform 0.3s ease';
     sidebar.classList.remove('open');
     sidebar.style.transform = sidebar.classList.contains('left-sidebar')
@@ -137,6 +126,7 @@ function initSwipeSidebar() {
     setTimeout(() => {
       isAnimating = false;
       sidebar.style.transition = '';
+      openSidebar = null;
     }, 300);
   }
 
@@ -147,7 +137,6 @@ function initSwipeSidebar() {
         closeSidebarElement(sidebar);
       }
     }
-    openSidebar = null;
   }
 
   function handleTocClick(e: Event) {
