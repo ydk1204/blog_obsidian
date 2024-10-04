@@ -2,6 +2,30 @@ function isMobile() {
   return window.innerWidth <= 800;
 }
 
+let scrollPosition = 0;
+
+function createOverlay() {
+  const overlay = document.createElement('div');
+  overlay.className = 'sidebar-overlay';
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function removeOverlay(overlay: HTMLElement) {
+  document.body.removeChild(overlay);
+}
+
+function disableMainScroll() {
+  scrollPosition = window.pageYOffset;
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+}
+
+function enableMainScroll() {
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+}
+
 function initSwipeSidebar() {
   if (!isMobile()) return;
 
@@ -10,12 +34,12 @@ function initSwipeSidebar() {
   const threshold = 50;
   let isAnimating = false;
   let openSidebar: 'left' | 'right' | null = null;
+  let overlay: HTMLElement | null = null;
 
   function handleTouchStart(e: TouchEvent) {
     if (isAnimating) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    console.log('Touch start:', startX, startY);
   }
 
   function handleTouchMove(e: TouchEvent) {
@@ -25,8 +49,6 @@ function initSwipeSidebar() {
     const y = e.touches[0].clientY;
     const diffX = startX - x;
     const diffY = startY - y;
-
-    console.log('Touch move:', x, y, 'Diff:', diffX, diffY);
 
     if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > threshold) {
       isAnimating = true;
@@ -40,7 +62,6 @@ function initSwipeSidebar() {
       const swipeDirection = diffX > 0 ? 'left' : 'right';
 
       if (openSidebar === null) {
-        // 열린 사이드바가 없을 때
         if (swipeDirection === 'left') {
           openSidebar = 'right';
           openSidebarElement(rightSidebar);
@@ -49,16 +70,32 @@ function initSwipeSidebar() {
           openSidebarElement(leftSidebar);
         }
       } else {
-        // 이미 열린 사이드바가 있을 때
-        if (openSidebar === 'left') {
-          closeSidebarElement(leftSidebar);
+        if (
+          (openSidebar === 'left' && swipeDirection === 'left') ||
+          (openSidebar === 'right' && swipeDirection === 'right')
+        ) {
+          if (openSidebar === 'left') {
+            closeSidebarElement(leftSidebar);
+          } else {
+            closeSidebarElement(rightSidebar);
+          }
+          openSidebar = null;
         } else {
-          closeSidebarElement(rightSidebar);
+          if (openSidebar === 'left') {
+            closeSidebarElement(leftSidebar);
+            setTimeout(() => {
+              openSidebar = 'right';
+              openSidebarElement(rightSidebar);
+            }, 300);
+          } else if (openSidebar === 'right') {
+            closeSidebarElement(rightSidebar);
+            setTimeout(() => {
+              openSidebar = 'left';
+              openSidebarElement(leftSidebar);
+            }, 300);
+          }
         }
-        openSidebar = null;
       }
-
-      console.log('Sidebar action performed');
 
       startX = null;
       startY = null;
@@ -66,19 +103,20 @@ function initSwipeSidebar() {
   }
 
   function handleTouchEnd() {
-    console.log('Touch end');
     startX = null;
     startY = null;
     setTimeout(() => {
       isAnimating = false;
-    }, 50);
+    }, 300);
   }
 
   function openSidebarElement(sidebar: HTMLElement) {
     sidebar.style.transition = 'transform 0.3s ease';
     sidebar.classList.add('open');
     sidebar.style.transform = 'translateX(0)';
-    console.log('Opening sidebar:', sidebar.classList.contains('left-sidebar') ? 'left' : 'right');
+    disableMainScroll();
+    overlay = createOverlay();
+    sidebar.style.overflowY = 'auto';
     setTimeout(() => {
       isAnimating = false;
       sidebar.style.transition = '';
@@ -88,17 +126,59 @@ function initSwipeSidebar() {
   function closeSidebarElement(sidebar: HTMLElement) {
     sidebar.style.transition = 'transform 0.3s ease';
     sidebar.classList.remove('open');
-    sidebar.style.transform = sidebar.classList.contains('left-sidebar') ? 'translateX(-100%)' : 'translateX(100%)';
-    console.log('Closing sidebar:', sidebar.classList.contains('left-sidebar') ? 'left' : 'right');
+    sidebar.style.transform = sidebar.classList.contains('left-sidebar')
+      ? 'translateX(-100%)'
+      : 'translateX(100%)';
+    enableMainScroll();
+    if (overlay) {
+      removeOverlay(overlay);
+      overlay = null;
+    }
     setTimeout(() => {
       isAnimating = false;
       sidebar.style.transition = '';
     }, 300);
   }
 
+  function handlePageNavigation() {
+    if (openSidebar !== null) {
+      const sidebar = document.querySelector(`.${openSidebar}-sidebar`) as HTMLElement;
+      if (sidebar) {
+        closeSidebarElement(sidebar);
+      }
+    }
+    openSidebar = null;
+  }
+
+  function handleTocClick(e: Event) {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' && target.closest('.toc')) {
+      e.preventDefault();
+      const href = target.getAttribute('href');
+      if (href) {
+        const element = document.querySelector(href);
+        if (element) {
+          handlePageNavigation();
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        }
+      }
+    }
+  }
+
   document.addEventListener('touchstart', handleTouchStart, { passive: true });
   document.addEventListener('touchmove', handleTouchMove, { passive: false });
   document.addEventListener('touchend', handleTouchEnd, { passive: true });
+  document.addEventListener('click', handleTocClick, { capture: true });
+
+  window.addEventListener('popstate', handlePageNavigation);
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'A' && target.getAttribute('href')) {
+      handlePageNavigation();
+    }
+  });
 }
 
 function initialize() {
@@ -106,7 +186,7 @@ function initialize() {
   window.addEventListener('resize', initSwipeSidebar);
 }
 
-(function() {
+(function () {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize);
   } else {
@@ -116,15 +196,17 @@ function initialize() {
 
 export default `
   ${isMobile.toString()}
+  ${createOverlay.toString()}
+  ${removeOverlay.toString()}
+  ${disableMainScroll.toString()}
+  ${enableMainScroll.toString()}
   ${initSwipeSidebar.toString()}
   ${initialize.toString()}
-  (${(function() {
+  (${(function () {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initialize);
     } else {
       initialize();
     }
   }).toString()})();
-`
-
-
+`;

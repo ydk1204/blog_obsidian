@@ -20,6 +20,12 @@
 
 .left-sidebar,
 .right-sidebar {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.left-sidebar,
+.right-sidebar {
   position: fixed;
   top: 0;
   bottom: 0;
@@ -28,8 +34,7 @@
   background-color: var(--light);
   transition: transform 0.3s ease;
   overflow-y: auto;
-  pointer-events: auto;
-  height: 100%;
+  height: 110svh;
   padding: 1rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -56,8 +61,14 @@
   transform: translateX(0);
 }
 
-.left-sidebar, .right-sidebar {
-  .search, .darkmode, .explorer, .graph, .toc, .backlinks {
+.left-sidebar,
+.right-sidebar {
+  .search,
+  .darkmode,
+  .explorer,
+  .graph,
+  .toc,
+  .backlinks {
     width: 100%;
   }
 }
@@ -66,4 +77,57 @@
   .swipe-sidebar {
     display: block;
   }
+}
+
+body.sidebar-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+.left-sidebar,
+.right-sidebar {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quartz-body {
+  &.sidebar-open {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+
+.content-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+body.sidebar-open {
+  overflow: hidden;
+}
+
+.left-sidebar,
+.right-sidebar {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.sidebar-open {
+  overflow: hidden !important;
+  position: fixed;
+  width: 100%;
+  height: 100%;
 }
