@@ -7,6 +7,7 @@ tags:
   - 네트워크
   - HTTP
   - 프로토콜
+disqus: true
 ---
 
 # HTTP/2
