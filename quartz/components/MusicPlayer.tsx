@@ -57,7 +57,6 @@ MusicPlayer.afterDOMLoaded = `
         list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
         autoplay: 0,
         playsinline: 1,
-        origin: window.location.origin
       },
       events: {
         'onReady': onPlayerReady,
@@ -93,15 +92,6 @@ MusicPlayer.afterDOMLoaded = `
 
   function onPlayerError(event) {
     console.error('YouTube player error:', event.data);
-    const errorMessages = {
-      2: "잘못된 매개변수 값",
-      5: "HTML5 플레이어 관련 오류",
-      100: "요청한 비디오를 찾을 수 없음",
-      101: "소유자가 웹사이트에서 재생을 허용하지 않음",
-      150: "소유자가 웹사이트에서 재생을 허용하지 않음"
-    };
-    const errorMessage = errorMessages[event.data] || "알 수 없는 오류 발생";
-    console.error("오류 메시지:", errorMessage);
   }
 
   function setupControls() {
@@ -123,37 +113,29 @@ MusicPlayer.afterDOMLoaded = `
       } else {
         player.playVideo();
       }
-    } else {
-      console.error('Player is not ready');
     }
   }
 
   function playPreviousTrack() {
     if (player && player.previousVideo) {
       player.previousVideo();
-    } else {
-      console.error('Player is not ready or previousVideo is not available');
     }
   }
 
   function playNextTrack() {
     if (player && player.nextVideo) {
       player.nextVideo();
-    } else {
-      console.error('Player is not ready or nextVideo is not available');
     }
   }
 
   function toggleMute() {
-    if (player && player.isMuted && player.mute && player.unMute) {
+    if (player && player.isMuted && player.unMute && player.mute) {
       if (player.isMuted()) {
         player.unMute();
       } else {
         player.mute();
       }
       updateMuteButton();
-    } else {
-      console.error('Player is not ready or mute functions are not available');
     }
   }
 
@@ -176,22 +158,18 @@ MusicPlayer.afterDOMLoaded = `
       const videoData = player.getVideoData();
       const songTitle = videoData && videoData.title ? videoData.title : '재생 준비 중...';
       document.getElementById('song-title').textContent = songTitle;
-    } else {
-      console.error('Player is not ready or getVideoData is not available');
     }
   }
 
   function setupVolumeSlider() {
     const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', function() {
-      if (player && player.setVolume && player.unMute) {
+      if (player && player.setVolume) {
         player.setVolume(this.value);
-        if (this.value > 0) {
+        if (this.value > 0 && player.unMute) {
           player.unMute();
         }
         updateMuteButton();
-      } else {
-        console.error('Player is not ready or volume functions are not available');
       }
     });
   }
@@ -211,7 +189,7 @@ MusicPlayer.afterDOMLoaded = `
 
   function restorePlayerState() {
     const savedState = JSON.parse(localStorage.getItem('youtubePlayerState'));
-    if (savedState && isPlayerReady && player && player.loadVideoById && player.playVideo && player.pauseVideo && player.setVolume && player.mute && player.unMute) {
+    if (savedState && isPlayerReady && player) {
       player.loadVideoById(savedState.videoId, savedState.currentTime);
       if (savedState.isPlaying) {
         player.playVideo();
@@ -225,6 +203,7 @@ MusicPlayer.afterDOMLoaded = `
         player.unMute();
       }
       updateSongTitle();
+      updateMuteButton();
     }
   }
 
@@ -248,9 +227,7 @@ MusicPlayer.afterDOMLoaded = `
     });
   }
 
-  document.addEventListener('themechange', function(e) {
-    updatePlayerTheme();
-  });
+  document.addEventListener('themechange', updatePlayerTheme);
 
   document.addEventListener('nav', function(event) {
     savePlayerState();
@@ -264,6 +241,13 @@ MusicPlayer.afterDOMLoaded = `
       updatePlayerTheme();
     }, 100);
   });
+
+  // 모바일 기기에서의 재생 문제 해결을 위한 코드
+  document.addEventListener('click', function() {
+    if (isPlayerReady && player && player.playVideo) {
+      player.playVideo();
+    }
+  }, { once: true });
 
   initializePlayer();
 `
