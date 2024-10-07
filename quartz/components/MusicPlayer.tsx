@@ -117,15 +117,17 @@ MusicPlayer.afterDOMLoaded = `
     }
   }
 
-  function playPreviousTrack() {
-    if (player && player.previousVideo) {
-      player.previousVideo().catch(e => console.error('이전 곡 재생 오류:', e));
+  function playNextTrack() {
+    if (player && player.nextVideo) {
+      player.nextVideo();
+      setTimeout(updateSongTitle, 1000);
     }
   }
 
-  function playNextTrack() {
-    if (player && player.nextVideo) {
-      player.nextVideo().catch(e => console.error('다음 곡 재생 오류:', e));
+  function playPreviousTrack() {
+    if (player && player.previousVideo) {
+      player.previousVideo();
+      setTimeout(updateSongTitle, 1000);
     }
   }
 
@@ -144,14 +146,12 @@ MusicPlayer.afterDOMLoaded = `
   function updateMuteButton() {
     const volumeIcon = document.getElementById('volume-icon');
     const muteIcon = document.getElementById('mute-icon');
-    const volumeSlider = document.getElementById('volume-slider');
+    const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
     if (player && player.isMuted && player.getVolume) {
       const isMuted = player.isMuted() || player.getVolume() === 0;
       volumeIcon.style.display = isMuted ? 'none' : 'inline';
       muteIcon.style.display = isMuted ? 'inline' : 'none';
-      if (volumeSlider) {
-        volumeSlider.value = isMuted ? '0' : player.getVolume().toString();
-      }
+      volumeSlider.value = isMuted ? '0' : player.getVolume().toString();
     }
   }
 
@@ -249,7 +249,7 @@ MusicPlayer.afterDOMLoaded = `
 
   // 모바일 기기에서의 재생 문제 해결을 위한 코드
   document.addEventListener('click', function() {
-    if (isPlayerReady && player && player.playVideo) {
+  if (isPlayerReady && player && player.playVideo) {
       player.playVideo().catch(e => console.error('재생 오류:', e));
     }
   }, { once: true, capture: true });
