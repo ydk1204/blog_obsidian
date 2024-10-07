@@ -40,10 +40,11 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function initializePlayer() {
+    checkMobile();
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
       window.onYouTubeIframeAPIReady = () => {
         console.log("YouTube API is ready");
-        onYouTubeIframeAPIReady();
+        createYouTubePlayer();
       };
       const tag = document.createElement('script');
       tag.src = "https://www.youtube.com/iframe_api";
@@ -51,12 +52,11 @@ MusicPlayer.afterDOMLoaded = `
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     } else {
       console.log("YouTube API is already loaded");
-      onYouTubeIframeAPIReady();
+      createYouTubePlayer();
     }
   }
 
-  function onYouTubeIframeAPIReady() {
-    checkMobile();
+  function createYouTubePlayer() {
     player = new YT.Player('youtube-player', {
       height: '1',
       width: '1',
@@ -79,7 +79,6 @@ MusicPlayer.afterDOMLoaded = `
     console.log('YouTube player is ready');
     isPlayerReady = true;
 
-    // 플레이리스트를 강제로 로드합니다.
     player.loadPlaylist({
       list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
       listType: 'playlist',
@@ -89,7 +88,6 @@ MusicPlayer.afterDOMLoaded = `
 
     console.log('플레이리스트 로드 시도');
 
-    // 플레이리스트 로드 확인을 위해 약간의 지연 후 체크
     setTimeout(() => {
       if (player && player.getPlaylist && player.getPlaylistIndex) {
         const playlist = player.getPlaylist();
@@ -149,24 +147,23 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function togglePlayPause() {
-    if (player && player.getPlayerState) {
-      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+    if (isPlayerReady && player) {
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
         player.pauseVideo();
       } else {
         player.playVideo();
       }
-      setTimeout(() => {
-        updatePlayPauseButton();
-        updateSongTitle();
-      }, 100);
+      setTimeout(updatePlayPauseButton, 100);
     }
   }
 
   function updatePlayPauseButton() {
     const playIcon = document.getElementById('play-icon');
     const pauseIcon = document.getElementById('pause-icon');
-    if (player && player.getPlayerState) {
-      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+    if (isPlayerReady && player) {
+      const state = player.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
         playIcon.style.display = 'none';
         pauseIcon.style.display = 'inline';
       } else {
@@ -177,7 +174,7 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function playNextTrack() {
-    if (player && player.nextVideo) {
+    if (isPlayerReady && player && player.nextVideo) {
       player.nextVideo();
       console.log('다음 곡으로 이동');
       setTimeout(() => {
@@ -190,7 +187,7 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function playPreviousTrack() {
-    if (player && player.previousVideo) {
+    if (isPlayerReady && player && player.previousVideo) {
       player.previousVideo();
       console.log('이전 곡으로 이동');
       setTimeout(() => {
@@ -206,7 +203,7 @@ MusicPlayer.afterDOMLoaded = `
     const volumeIcon = document.getElementById('volume-icon');
     const muteIcon = document.getElementById('mute-icon');
     const volumeSlider = document.getElementById('volume-slider');
-    if (player && player.isMuted && player.getVolume) {
+    if (isPlayerReady && player && player.isMuted && player.getVolume) {
       const isMuted = player.isMuted() || player.getVolume() === 0;
       console.log('Mute status:', isMuted, 'Volume:', player.getVolume());
       volumeIcon.style.display = isMuted ? 'none' : 'inline';
@@ -216,7 +213,7 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function toggleMute() {
-    if (player && player.isMuted && player.unMute && player.mute && player.setVolume && player.getVolume) {
+    if (isPlayerReady && player && player.isMuted && player.unMute && player.mute && player.setVolume && player.getVolume) {
       const currentlyMuted = player.isMuted() || player.getVolume() === 0;
       console.log('Current mute status:', currentlyMuted);
       if (currentlyMuted) {
@@ -236,7 +233,7 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function updateSongTitle() {
-    if (player && player.getVideoData) {
+    if (isPlayerReady && player && player.getVideoData) {
       const videoData = player.getVideoData();
       const songTitle = videoData && videoData.title ? videoData.title : '재생 준비 중...';
       document.getElementById('song-title').textContent = songTitle;
@@ -246,7 +243,7 @@ MusicPlayer.afterDOMLoaded = `
   function setupVolumeSlider() {
     const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', function() {
-      if (player && player.setVolume && player.unMute) {
+      if (isPlayerReady && player && player.setVolume && player.unMute) {
         const volume = parseInt(this.value);
         player.setVolume(volume);
         if (volume > 0) {
@@ -328,7 +325,6 @@ MusicPlayer.afterDOMLoaded = `
     }, 100);
   });
 
-  // 모바일 기기에서의 재생 문제 해결을 위한 코드
   document.addEventListener('click', function() {
     if (isPlayerReady && player && player.playVideo) {
       player.playVideo().then(() => {
