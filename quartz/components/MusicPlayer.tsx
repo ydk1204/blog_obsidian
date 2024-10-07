@@ -83,10 +83,11 @@ MusicPlayer.afterDOMLoaded = `
       updateSongTitle();
       playIcon.style.display = 'none';
       pauseIcon.style.display = 'inline';
-    } else if (event.data == YT.PlayerState.PAUSED) {
+    } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
       playIcon.style.display = 'inline';
       pauseIcon.style.display = 'none';
     }
+    updateMuteButton();
     savePlayerState();
   }
 
@@ -118,20 +119,21 @@ MusicPlayer.afterDOMLoaded = `
 
   function playPreviousTrack() {
     if (player && player.previousVideo) {
-      player.previousVideo();
+      player.previousVideo().catch(e => console.error('이전 곡 재생 오류:', e));
     }
   }
 
   function playNextTrack() {
     if (player && player.nextVideo) {
-      player.nextVideo();
+      player.nextVideo().catch(e => console.error('다음 곡 재생 오류:', e));
     }
   }
 
   function toggleMute() {
-    if (player && player.isMuted && player.unMute && player.mute) {
-      if (player.isMuted()) {
+    if (player && player.isMuted && player.unMute && player.mute && player.getVolume && player.setVolume) {
+      if (player.isMuted() || player.getVolume() === 0) {
         player.unMute();
+        player.setVolume(100);
       } else {
         player.mute();
       }
@@ -142,13 +144,13 @@ MusicPlayer.afterDOMLoaded = `
   function updateMuteButton() {
     const volumeIcon = document.getElementById('volume-icon');
     const muteIcon = document.getElementById('mute-icon');
-    if (player && player.isMuted) {
-      if (player.isMuted()) {
-        volumeIcon.style.display = 'none';
-        muteIcon.style.display = 'inline';
-      } else {
-        volumeIcon.style.display = 'inline';
-        muteIcon.style.display = 'none';
+    const volumeSlider = document.getElementById('volume-slider');
+    if (player && player.isMuted && player.getVolume) {
+      const isMuted = player.isMuted() || player.getVolume() === 0;
+      volumeIcon.style.display = isMuted ? 'none' : 'inline';
+      muteIcon.style.display = isMuted ? 'inline' : 'none';
+      if (volumeSlider) {
+        volumeSlider.value = isMuted ? '0' : player.getVolume().toString();
       }
     }
   }
@@ -165,9 +167,12 @@ MusicPlayer.afterDOMLoaded = `
     const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', function() {
       if (player && player.setVolume) {
-        player.setVolume(this.value);
-        if (this.value > 0 && player.unMute) {
+        const volume = parseInt(this.value);
+        player.setVolume(volume);
+        if (volume > 0 && player.unMute) {
           player.unMute();
+        } else if (volume === 0 && player.mute) {
+          player.mute();
         }
         updateMuteButton();
       }
@@ -245,9 +250,9 @@ MusicPlayer.afterDOMLoaded = `
   // 모바일 기기에서의 재생 문제 해결을 위한 코드
   document.addEventListener('click', function() {
     if (isPlayerReady && player && player.playVideo) {
-      player.playVideo();
+      player.playVideo().catch(e => console.error('재생 오류:', e));
     }
-  }, { once: true });
+  }, { once: true, capture: true });
 
   initializePlayer();
 `
