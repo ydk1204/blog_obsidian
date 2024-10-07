@@ -83,6 +83,15 @@ async function navigate(url: URL, isBack: boolean = false) {
   // morph body
   micromorph(document.body, html.body)
 
+  // morph body 이후에 추가
+  const musicPlayer = document.querySelector('.music-player');
+  if (musicPlayer) {
+    const newMusicPlayer = html.querySelector('.music-player');
+    if (newMusicPlayer) {
+      musicPlayer.replaceWith(newMusicPlayer);
+    }
+  }
+
   // scroll into place and add history
   if (!isBack) {
     if (url.hash) {

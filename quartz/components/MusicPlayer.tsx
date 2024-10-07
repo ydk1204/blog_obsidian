@@ -29,42 +29,52 @@ function MusicPlayer({ displayClass }: QuartzComponentProps) {
 }
 
 MusicPlayer.afterDOMLoaded = `
-  if (typeof window.YT === 'undefined' || typeof window.YT.Player === 'undefined') {
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+  let player;
+  let isPlayerReady = false;
+
+  function initializePlayer() {
+    if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
+      window.onYouTubeIframeAPIReady = () => {
+        console.log("YouTube API is ready");
+        onYouTubeIframeAPIReady();
+      };
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    } else {
+      console.log("YouTube API is already loaded");
+      onYouTubeIframeAPIReady();
+    }
   }
 
-  window.onYouTubeIframeAPIReady = function() {
-    if (!window.player) {
-      window.player = new YT.Player('youtube-player', {
-        height: '1',
-        width: '1',
-        playerVars: {
-          listType: 'playlist',
-          list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
-          autoplay: 0,
-          playsinline: 1,
-        },
-        events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
-          'onError': onPlayerError
-        }
-      });
-    } else {
-      setupControls();
-      updateSongTitle();
-      setupVolumeSlider();
-    }
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player('youtube-player', {
+      height: '1',
+      width: '1',
+      playerVars: {
+        listType: 'playlist',
+        list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
+        autoplay: 0,
+        playsinline: 1,
+        origin: window.location.origin
+      },
+      events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange,
+        'onError': onPlayerError
+      }
+    });
   }
 
   function onPlayerReady(event) {
     console.log('YouTube player is ready');
+    isPlayerReady = true;
     setupControls();
     updateSongTitle();
     setupVolumeSlider();
+    restorePlayerState();
+    updatePlayerTheme();
   }
 
   function onPlayerStateChange(event) {
@@ -78,105 +88,184 @@ MusicPlayer.afterDOMLoaded = `
       playIcon.style.display = 'inline';
       pauseIcon.style.display = 'none';
     }
+    savePlayerState();
   }
 
   function onPlayerError(event) {
     console.error('YouTube player error:', event.data);
-    document.getElementById('song-title').textContent = '오류 발생: 재생할 수 없습니다';
-  }
-
-  function updateSongTitle() {
-    if (window.player && window.player.getVideoData) {
-      const songTitle = window.player.getVideoData().title;
-      document.getElementById('song-title').textContent = songTitle || '재생 중인 곡 없음';
-    }
+    const errorMessages = {
+      2: "잘못된 매개변수 값",
+      5: "HTML5 플레이어 관련 오류",
+      100: "요청한 비디오를 찾을 수 없음",
+      101: "소유자가 웹사이트에서 재생을 허용하지 않음",
+      150: "소유자가 웹사이트에서 재생을 허용하지 않음"
+    };
+    const errorMessage = errorMessages[event.data] || "알 수 없는 오류 발생";
+    console.error("오류 메시지:", errorMessage);
   }
 
   function setupControls() {
-    const playPauseBtn = document.getElementById('play-pause');
-    const nextBtn = document.getElementById('next');
-    const prevBtn = document.getElementById('prev');
-    const muteBtn = document.getElementById('mute');
+    const playPauseButton = document.getElementById('play-pause');
+    const prevButton = document.getElementById('prev');
+    const nextButton = document.getElementById('next');
+    const muteButton = document.getElementById('mute');
+
+    playPauseButton.addEventListener('click', togglePlayPause);
+    prevButton.addEventListener('click', playPreviousTrack);
+    nextButton.addEventListener('click', playNextTrack);
+    muteButton.addEventListener('click', toggleMute);
+  }
+
+  function togglePlayPause() {
+    if (player && player.getPlayerState) {
+      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        player.pauseVideo();
+      } else {
+        player.playVideo();
+      }
+    } else {
+      console.error('Player is not ready');
+    }
+  }
+
+  function playPreviousTrack() {
+    if (player && player.previousVideo) {
+      player.previousVideo();
+    } else {
+      console.error('Player is not ready or previousVideo is not available');
+    }
+  }
+
+  function playNextTrack() {
+    if (player && player.nextVideo) {
+      player.nextVideo();
+    } else {
+      console.error('Player is not ready or nextVideo is not available');
+    }
+  }
+
+  function toggleMute() {
+    if (player && player.isMuted && player.mute && player.unMute) {
+      if (player.isMuted()) {
+        player.unMute();
+      } else {
+        player.mute();
+      }
+      updateMuteButton();
+    } else {
+      console.error('Player is not ready or mute functions are not available');
+    }
+  }
+
+  function updateMuteButton() {
     const volumeIcon = document.getElementById('volume-icon');
     const muteIcon = document.getElementById('mute-icon');
-
-    playPauseBtn.addEventListener('click', function() {
-      if (!window.player) return;
-      if (window.player.getPlayerState() === YT.PlayerState.PLAYING) {
-        window.player.pauseVideo();
-      } else {
-        window.player.playVideo().catch(e => console.error('재생 오류:', e));
-      }
-    });
-
-    nextBtn.addEventListener('click', function() {
-      if (window.player) window.player.nextVideo();
-    });
-
-    prevBtn.addEventListener('click', function() {
-      if (window.player) window.player.previousVideo();
-    });
-
-    muteBtn.addEventListener('click', function() {
-      if (!window.player) return;
-      if (window.player.isMuted()) {
-        window.player.unMute();
-        volumeIcon.style.display = 'inline';
-        muteIcon.style.display = 'none';
-      } else {
-        window.player.mute();
+    if (player && player.isMuted) {
+      if (player.isMuted()) {
         volumeIcon.style.display = 'none';
         muteIcon.style.display = 'inline';
+      } else {
+        volumeIcon.style.display = 'inline';
+        muteIcon.style.display = 'none';
       }
-    });
+    }
+  }
+
+  function updateSongTitle() {
+    if (player && player.getVideoData) {
+      const videoData = player.getVideoData();
+      const songTitle = videoData && videoData.title ? videoData.title : '재생 준비 중...';
+      document.getElementById('song-title').textContent = songTitle;
+    } else {
+      console.error('Player is not ready or getVideoData is not available');
+    }
   }
 
   function setupVolumeSlider() {
     const volumeSlider = document.getElementById('volume-slider');
-    const volumeIcon = document.getElementById('volume-icon');
-    const muteIcon = document.getElementById('mute-icon');
-    if (isMobile()) {
-      volumeSlider.style.display = 'none';
-    } else {
-      volumeSlider.style.display = 'block';
-      volumeSlider.addEventListener('input', function() {
-        if (window.player) {
-          window.player.setVolume(this.value);
-          window.player.unMute();
-          volumeIcon.style.display = 'inline';
-          muteIcon.style.display = 'none';
+    volumeSlider.addEventListener('input', function() {
+      if (player && player.setVolume && player.unMute) {
+        player.setVolume(this.value);
+        if (this.value > 0) {
+          player.unMute();
         }
-      });
+        updateMuteButton();
+      } else {
+        console.error('Player is not ready or volume functions are not available');
+      }
+    });
+  }
+
+  function savePlayerState() {
+    if (isPlayerReady && player && player.getVideoData && player.getCurrentTime && player.getPlayerState && player.getVolume && player.isMuted) {
+      const state = {
+        videoId: player.getVideoData().video_id,
+        currentTime: player.getCurrentTime(),
+        isPlaying: player.getPlayerState() === YT.PlayerState.PLAYING,
+        volume: player.getVolume(),
+        isMuted: player.isMuted()
+      };
+      localStorage.setItem('youtubePlayerState', JSON.stringify(state));
     }
   }
 
-  function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  function restorePlayerState() {
+    const savedState = JSON.parse(localStorage.getItem('youtubePlayerState'));
+    if (savedState && isPlayerReady && player && player.loadVideoById && player.playVideo && player.pauseVideo && player.setVolume && player.mute && player.unMute) {
+      player.loadVideoById(savedState.videoId, savedState.currentTime);
+      if (savedState.isPlaying) {
+        player.playVideo();
+      } else {
+        player.pauseVideo();
+      }
+      player.setVolume(savedState.volume);
+      if (savedState.isMuted) {
+        player.mute();
+      } else {
+        player.unMute();
+      }
+      updateSongTitle();
+    }
   }
 
-  // 다크 모드 감지 및 이미지 색상 변경
-  const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  const changeImageColor = (isDarkMode) => {
-    const images = document.querySelectorAll('.music-player img');
-    images.forEach(img => {
-      img.style.filter = isDarkMode ? 'invert(1)' : 'invert(0.1)';
+  function updatePlayerTheme() {
+    const theme = document.documentElement.getAttribute('saved-theme');
+    const musicPlayer = document.querySelector('.music-player');
+    if (musicPlayer) {
+      musicPlayer.setAttribute('data-theme', theme);
+    }
+    updateButtonColors(theme);
+  }
+
+  function updateButtonColors(theme) {
+    const buttons = document.querySelectorAll('.music-player button img');
+    buttons.forEach(img => {
+      if (theme === 'dark') {
+        img.style.filter = 'invert(1)';
+      } else {
+        img.style.filter = 'none';
+      }
     });
-  };
+  }
 
-  // 페이지 로드 시 즉시 이미지 색상 변경
-  changeImageColor(document.documentElement.getAttribute('saved-theme') === 'dark');
-
-  // 시스템 테마 변경 감지
-  darkModeMediaQuery.addListener((e) => changeImageColor(e.matches));
-
-  // Quartz의 테마 변경 이벤트 리스너
-  document.addEventListener('themechange', (e) => {
-    changeImageColor(e.detail.theme === 'dark');
+  document.addEventListener('themechange', function(e) {
+    updatePlayerTheme();
   });
 
-  if (window.YT && window.YT.Player) {
-    window.onYouTubeIframeAPIReady();
-  }
+  document.addEventListener('nav', function(event) {
+    savePlayerState();
+    setTimeout(() => {
+      const newPlayer = document.getElementById('youtube-player');
+      if (newPlayer && !newPlayer.contentWindow) {
+        initializePlayer();
+      } else {
+        restorePlayerState();
+      }
+      updatePlayerTheme();
+    }, 100);
+  });
+
+  initializePlayer();
 `
 
 export default (() => MusicPlayer) satisfies QuartzComponentConstructor

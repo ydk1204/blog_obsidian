@@ -1,7 +1,5 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
-import MusicPlayer from "./quartz/components/MusicPlayer"
-
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
@@ -15,7 +13,7 @@ export const sharedPageComponents: SharedLayout = {
       "Discord Community": "https://discord.gg/cRFFHYye7t",
     },
   }),
-  afterBody: [], // 이 줄을 추가했습니다
+  afterBody: [],
 }
 
 // components for pages that display a single page (e.g. a single note)
