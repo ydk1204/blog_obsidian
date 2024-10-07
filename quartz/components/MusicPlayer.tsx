@@ -31,6 +31,7 @@ function MusicPlayer({ displayClass }: QuartzComponentProps) {
 MusicPlayer.afterDOMLoaded = `
   let player;
   let isPlayerReady = false;
+  let lastVolume = 100;
 
   function initializePlayer() {
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
@@ -69,11 +70,33 @@ MusicPlayer.afterDOMLoaded = `
   function onPlayerReady(event) {
     console.log('YouTube player is ready');
     isPlayerReady = true;
+
+    // 플레이리스트를 강제로 로드합니다.
+    player.loadPlaylist({
+      list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
+      listType: 'playlist',
+      index: 0,
+      startSeconds: 0
+    });
+
+    console.log('플레이리스트 로드 시도');
+
+    // 플레이리스트 로드 확인을 위해 약간의 지연 후 체크
+    setTimeout(() => {
+      if (player && player.getPlaylist && player.getPlaylistIndex) {
+        const playlist = player.getPlaylist();
+        const currentIndex = player.getPlaylistIndex();
+        console.log('Playlist:', playlist ? playlist : 'Not available');
+        console.log('Current index:', currentIndex !== undefined ? currentIndex : 'Not available');
+      }
+    }, 2000);
+
     setupControls();
     updateSongTitle();
     setupVolumeSlider();
     restorePlayerState();
     updatePlayerTheme();
+    updateMuteButton();
   }
 
   function onPlayerStateChange(event) {
@@ -83,6 +106,7 @@ MusicPlayer.afterDOMLoaded = `
       updateSongTitle();
       playIcon.style.display = 'none';
       pauseIcon.style.display = 'inline';
+      console.log('현재 재생 중인 곡 인덱스:', player.getPlaylistIndex());
     } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
       playIcon.style.display = 'inline';
       pauseIcon.style.display = 'none';
@@ -102,9 +126,18 @@ MusicPlayer.afterDOMLoaded = `
     const muteButton = document.getElementById('mute');
 
     playPauseButton.addEventListener('click', togglePlayPause);
-    prevButton.addEventListener('click', playPreviousTrack);
-    nextButton.addEventListener('click', playNextTrack);
-    muteButton.addEventListener('click', toggleMute);
+    prevButton.addEventListener('click', () => {
+      console.log('이전 곡 버튼 클릭');
+      playPreviousTrack();
+    });
+    nextButton.addEventListener('click', () => {
+      console.log('다음 곡 버튼 클릭');
+      playNextTrack();
+    });
+    muteButton.addEventListener('click', () => {
+      console.log('음소거 버튼 클릭');
+      toggleMute();
+    });
   }
 
   function togglePlayPause() {
@@ -120,26 +153,20 @@ MusicPlayer.afterDOMLoaded = `
   function playNextTrack() {
     if (player && player.nextVideo) {
       player.nextVideo();
+      console.log('다음 곡으로 이동');
       setTimeout(updateSongTitle, 1000);
+    } else {
+      console.log('다음 곡 재생 실패');
     }
   }
 
   function playPreviousTrack() {
     if (player && player.previousVideo) {
       player.previousVideo();
+      console.log('이전 곡으로 이동');
       setTimeout(updateSongTitle, 1000);
-    }
-  }
-
-  function toggleMute() {
-    if (player && player.isMuted && player.unMute && player.mute && player.getVolume && player.setVolume) {
-      if (player.isMuted() || player.getVolume() === 0) {
-        player.unMute();
-        player.setVolume(100);
-      } else {
-        player.mute();
-      }
-      updateMuteButton();
+    } else {
+      console.log('이전 곡 재생 실패');
     }
   }
 
@@ -149,9 +176,30 @@ MusicPlayer.afterDOMLoaded = `
     const volumeSlider = document.getElementById('volume-slider');
     if (player && player.isMuted && player.getVolume) {
       const isMuted = player.isMuted() || player.getVolume() === 0;
+      console.log('Mute status:', isMuted, 'Volume:', player.getVolume());
       volumeIcon.style.display = isMuted ? 'none' : 'inline';
       muteIcon.style.display = isMuted ? 'inline' : 'none';
       volumeSlider.value = isMuted ? '0' : player.getVolume().toString();
+    }
+  }
+
+  function toggleMute() {
+    if (player && player.isMuted && player.unMute && player.mute && player.setVolume && player.getVolume) {
+      const currentlyMuted = player.isMuted() || player.getVolume() === 0;
+      console.log('Current mute status:', currentlyMuted);
+      if (currentlyMuted) {
+        player.unMute();
+        player.setVolume(lastVolume || 50);
+        console.log('Unmuting, setting volume to:', lastVolume || 50);
+      } else {
+        lastVolume = player.getVolume();
+        player.mute();
+        console.log('Muting, last volume was:', lastVolume);
+      }
+      setTimeout(() => {
+        updateMuteButton();
+        console.log('After toggle - Muted:', player.isMuted(), 'Volume:', player.getVolume());
+      }, 100);
     }
   }
 
@@ -166,12 +214,13 @@ MusicPlayer.afterDOMLoaded = `
   function setupVolumeSlider() {
     const volumeSlider = document.getElementById('volume-slider');
     volumeSlider.addEventListener('input', function() {
-      if (player && player.setVolume) {
+      if (player && player.setVolume && player.unMute) {
         const volume = parseInt(this.value);
         player.setVolume(volume);
-        if (volume > 0 && player.unMute) {
+        if (volume > 0) {
           player.unMute();
-        } else if (volume === 0 && player.mute) {
+          lastVolume = volume;
+        } else {
           player.mute();
         }
         updateMuteButton();
