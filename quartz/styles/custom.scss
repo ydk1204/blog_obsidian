@@ -206,3 +206,59 @@
   height: 100%;
   touch-action: none;
 }
+
+.music-player {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: var(--background);
+  border: 1px solid var(--lightgray);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 200px;
+}
+
+.music-player #song-title {
+  font-size: 14px;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.music-player .controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.music-player button {
+  background-color: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  color: var(--text);
+}
+
+.music-player button:hover {
+  opacity: 0.7;
+}
+
+.music-player #volume-slider {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* 모바일 기기를 위한 스타일 */
+@media (max-width: 768px) {
+  .music-player {
+    width: 150px;
+  }
+
+  .music-player button {
+    font-size: 16px;
+  }
+}
