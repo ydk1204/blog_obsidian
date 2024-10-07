@@ -146,7 +146,7 @@ MusicPlayer.afterDOMLoaded = `
   function updateMuteButton() {
     const volumeIcon = document.getElementById('volume-icon');
     const muteIcon = document.getElementById('mute-icon');
-    const volumeSlider = document.getElementById('volume-slider') as HTMLInputElement;
+    const volumeSlider = document.getElementById('volume-slider');
     if (player && player.isMuted && player.getVolume) {
       const isMuted = player.isMuted() || player.getVolume() === 0;
       volumeIcon.style.display = isMuted ? 'none' : 'inline';
@@ -249,8 +249,10 @@ MusicPlayer.afterDOMLoaded = `
 
   // 모바일 기기에서의 재생 문제 해결을 위한 코드
   document.addEventListener('click', function() {
-  if (isPlayerReady && player && player.playVideo) {
-      player.playVideo().catch(e => console.error('재생 오류:', e));
+    if (isPlayerReady && player && player.playVideo) {
+      player.playVideo().catch(function(e) {
+        console.error('재생 오류:', e);
+      });
     }
   }, { once: true, capture: true });
 
