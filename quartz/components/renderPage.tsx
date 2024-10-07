@@ -11,7 +11,7 @@ import { i18n } from "../i18n"
 // Disqus 임포트
 import Disqus, { disqusScript } from "./Disqus" // custom component
 // NavBar 임포트
-import NavBar, { navbarScript } from "./NavBar" // custom component
+// import NavBar, { navbarScript } from "./NavBar" // custom component
 
 
 interface RenderComponents {
@@ -223,7 +223,7 @@ export function renderPage(
       <Head {...componentData} />
       <body data-slug={slug}>
         <div id="quartz-root" class="page">
-          <NavBar />
+          {/* <NavBar /> */}
           <Body {...componentData}>
             {LeftComponent}
             <div class="center">
@@ -250,7 +250,7 @@ export function renderPage(
       {pageResources.js
         .filter((resource) => resource.loadTime === "afterDOMReady")
         .map((res) => JSResourceToScriptElement(res))}
-        <script dangerouslySetInnerHTML={{ __html: navbarScript }} />
+        {/* <script dangerouslySetInnerHTML={{ __html: navbarScript }} /> */}
       {componentData.fileData.frontmatter?.disqus && (
         <script data-cfasync="false" type="text/javascript" dangerouslySetInnerHTML={{ __html: disqusScript }} />
       )}

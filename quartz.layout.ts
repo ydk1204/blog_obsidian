@@ -8,7 +8,6 @@ export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [
     Component.MobileOnly(Component.SwipeSidebar()),
-    Component.MusicPlayer(),
   ],
   footer: Component.Footer({
     links: {
@@ -30,6 +29,7 @@ export const defaultContentPageLayout: PageLayout = {
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
+    Component.DesktopOnly(Component.MusicPlayer()),
     Component.Search(),
     Component.Darkmode(),
     Component.DesktopOnly(Component.Explorer()),
@@ -47,6 +47,7 @@ export const defaultListPageLayout: PageLayout = {
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
+    Component.DesktopOnly(Component.MusicPlayer()),
     Component.Search(),
     Component.Darkmode(),
     Component.DesktopOnly(Component.Explorer()),
