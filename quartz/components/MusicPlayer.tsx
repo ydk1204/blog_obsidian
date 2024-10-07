@@ -32,6 +32,12 @@ MusicPlayer.afterDOMLoaded = `
   let player;
   let isPlayerReady = false;
   let lastVolume = 100;
+  let isMobile = false;
+
+  function checkMobile() {
+    isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('Is mobile:', isMobile);
+  }
 
   function initializePlayer() {
     if (typeof YT === 'undefined' || typeof YT.Player === 'undefined') {
@@ -50,6 +56,7 @@ MusicPlayer.afterDOMLoaded = `
   }
 
   function onYouTubeIframeAPIReady() {
+    checkMobile();
     player = new YT.Player('youtube-player', {
       height: '1',
       width: '1',
@@ -58,6 +65,7 @@ MusicPlayer.afterDOMLoaded = `
         list: 'PLYFc8Rzrb-kVlTimvI-DT6XhoV4fZ9np3',
         autoplay: 0,
         playsinline: 1,
+        controls: isMobile ? 1 : 0,
       },
       events: {
         'onReady': onPlayerReady,
@@ -147,6 +155,24 @@ MusicPlayer.afterDOMLoaded = `
       } else {
         player.playVideo();
       }
+      setTimeout(() => {
+        updatePlayPauseButton();
+        updateSongTitle();
+      }, 100);
+    }
+  }
+
+  function updatePlayPauseButton() {
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    if (player && player.getPlayerState) {
+      if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = 'inline';
+      } else {
+        playIcon.style.display = 'inline';
+        pauseIcon.style.display = 'none';
+      }
     }
   }
 
@@ -154,7 +180,10 @@ MusicPlayer.afterDOMLoaded = `
     if (player && player.nextVideo) {
       player.nextVideo();
       console.log('다음 곡으로 이동');
-      setTimeout(updateSongTitle, 1000);
+      setTimeout(() => {
+        updateSongTitle();
+        updatePlayPauseButton();
+      }, 1000);
     } else {
       console.log('다음 곡 재생 실패');
     }
@@ -164,7 +193,10 @@ MusicPlayer.afterDOMLoaded = `
     if (player && player.previousVideo) {
       player.previousVideo();
       console.log('이전 곡으로 이동');
-      setTimeout(updateSongTitle, 1000);
+      setTimeout(() => {
+        updateSongTitle();
+        updatePlayPauseButton();
+      }, 1000);
     } else {
       console.log('이전 곡 재생 실패');
     }
@@ -299,7 +331,11 @@ MusicPlayer.afterDOMLoaded = `
   // 모바일 기기에서의 재생 문제 해결을 위한 코드
   document.addEventListener('click', function() {
     if (isPlayerReady && player && player.playVideo) {
-      player.playVideo().catch(function(e) {
+      player.playVideo().then(() => {
+        console.log('재생 시작');
+        updatePlayPauseButton();
+        updateSongTitle();
+      }).catch(function(e) {
         console.error('재생 오류:', e);
       });
     }
