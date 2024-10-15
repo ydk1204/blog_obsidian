@@ -21,7 +21,6 @@ import RecentNotes from "./RecentNotes"
 import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import SwipeSidebar from "./SwipeSidebar"
-import MusicPlayer from "./MusicPlayer"
 
 export {
   ArticleTitle,
@@ -47,5 +46,4 @@ export {
   Breadcrumbs,
   Comments,
   SwipeSidebar,
-  MusicPlayer,
 }

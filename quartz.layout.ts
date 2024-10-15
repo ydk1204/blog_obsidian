@@ -13,7 +13,7 @@ export const sharedPageComponents: SharedLayout = {
       "Discord Community": "https://discord.gg/cRFFHYye7t",
     },
   }),
-  afterBody: [],
+  afterBody: [], // 이 줄을 추가했습니다
 }
 
 // components for pages that display a single page (e.g. a single note)
@@ -27,7 +27,6 @@ export const defaultContentPageLayout: PageLayout = {
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
-    // Component.DesktopOnly(Component.MusicPlayer()),
     Component.Search(),
     Component.Darkmode(),
     Component.DesktopOnly(Component.Explorer()),
@@ -45,7 +44,6 @@ export const defaultListPageLayout: PageLayout = {
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),
-    // Component.DesktopOnly(Component.MusicPlayer()),
     Component.Search(),
     Component.Darkmode(),
     Component.DesktopOnly(Component.Explorer()),
