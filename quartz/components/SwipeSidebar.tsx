@@ -18,7 +18,7 @@ function SwipeSidebar({ fileData, allFiles, displayClass, ...rest }: QuartzCompo
   const GraphComponent = Graph()
   const TableOfContentsComponent = TableOfContents()
   const BacklinksComponent = Backlinks()
-  const MusicPlayerComponent = MusicPlayer()
+  // const MusicPlayerComponent = MusicPlayer()
 
   // 모든 props를 포함하는 객체를 생성합니다
   const fullProps = { ...rest, fileData, allFiles }
@@ -27,7 +27,7 @@ function SwipeSidebar({ fileData, allFiles, displayClass, ...rest }: QuartzCompo
     <div class={`swipe-sidebar ${displayClass ?? ""}`}>
       <div class="sidebar-container">
         <div class="left-sidebar">
-          <MusicPlayerComponent {...fullProps} />
+          {/* <MusicPlayerComponent {...fullProps} /> */}
           <h3>탐색</h3>
           <ExplorerComponent {...fullProps} />
         </div>
